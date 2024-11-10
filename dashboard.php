@@ -273,8 +273,7 @@ if (isset($_SESSION['id_usuario'])) {
                             <!-- Inicio Section -->
                             <div id="inicio" class="content-section active-section">
                                 <h2>Inicio</h2>
-
-                                <div id="resultado">
+                                <div id="resultado" class="container">
                                     <?php
                                     // Verificar si el id_usuario está disponible en la sesión
                                     if (isset($_SESSION['id_usuario'])) {
@@ -290,64 +289,44 @@ if (isset($_SESSION['id_usuario'])) {
 
                                         // Consulta para obtener los datos del usuario
                                         $sql = "
-                                              SELECT 
-    u.id_usuario,
-    u.Nombre,
-    u.Apellido,
-    u.correo,
-    u.contrasenia,
-    
-    -- Datos relacionados con el usuario
-    d.id_datos,
-    
-    -- Clasificación
-    c.tipo AS clasificacion_tipo,
-    
-    -- Datos adicionales
-    da.tipo_cuenta,
-    da.cuentas_bancarias,
-    
-    -- Fotos
-    f.id_fotos,
-    f.foto_ruta,
-    
-    -- Redes sociales
-    rs.tipo_red AS redes_sociales_tipo,
-    rs.links AS redes_sociales_links,
-    
-    -- Teléfonos
-    t.telefono AS telefono,
-    
-    -- Ubicación
-    uo.pais,
-    uo.provincia,
-    uo.canton,
-    uo.parroquia,
-    uo.altitud,
-    uo.latitud,
-    
-    -- Entidad
-    e.id_entidad,
-    e.Entidad_Nombre,
-    e.rama_accion,
-    e.ruc,
-    e.email AS entidad_email,
-    e.representante,
-    e.fuente_financiacion,
-    e.descripcion AS entidad_descripcion
-
-FROM Usuarios u
-LEFT JOIN Datos d ON u.id_usuario = d.id_usuario
-LEFT JOIN Clasificacion c ON d.id_datos = c.id_datos
-LEFT JOIN datos_adicionales da ON d.id_datos = da.id_dato
-LEFT JOIN fotos f ON d.id_datos = f.id_dato
-LEFT JOIN redes_sociales rs ON d.id_datos = rs.id_datos
-LEFT JOIN Telefonos t ON d.id_datos = t.id_datos
-LEFT JOIN Ubicacion uo ON d.id_datos = uo.id_dato
-LEFT JOIN Entidad e ON d.id_datos = e.id_dato
-WHERE u.id_usuario = ?;
-                                        
-                                            ";
+            SELECT 
+                u.id_usuario,
+                u.Nombre,
+                u.Apellido,
+                u.correo,
+                u.contrasenia,
+                d.id_datos,
+                c.tipo AS clasificacion_tipo,
+                da.tipo_cuenta,
+                da.cuentas_bancarias,
+                f.foto_ruta,
+                rs.tipo_red AS redes_sociales_tipo,
+                rs.links AS redes_sociales_links,
+                t.telefono,
+                uo.pais,
+                uo.provincia,
+                uo.canton,
+                uo.parroquia,
+                uo.altitud,
+                uo.latitud,
+                e.Entidad_Nombre,
+                e.rama_accion,
+                e.ruc,
+                e.email AS entidad_email,
+                e.representante,
+                e.fuente_financiacion,
+                e.descripcion AS entidad_descripcion
+            FROM Usuarios u
+            LEFT JOIN Datos d ON u.id_usuario = d.id_usuario
+            LEFT JOIN Clasificacion c ON d.id_datos = c.id_datos
+            LEFT JOIN datos_adicionales da ON d.id_datos = da.id_dato
+            LEFT JOIN fotos f ON d.id_datos = f.id_dato
+            LEFT JOIN redes_sociales rs ON d.id_datos = rs.id_datos
+            LEFT JOIN Telefonos t ON d.id_datos = t.id_datos
+            LEFT JOIN Ubicacion uo ON d.id_datos = uo.id_dato
+            LEFT JOIN Entidad e ON d.id_datos = e.id_dato
+            WHERE u.id_usuario = ?;
+        ";
 
                                         $stmt = $conn->prepare($sql);
                                         $stmt->bind_param("i", $id_usuario);
@@ -355,33 +334,87 @@ WHERE u.id_usuario = ?;
                                         $result = $stmt->get_result();
 
                                         if ($result->num_rows > 0) {
-                                            // Mostrar datos en el div #resultado
+                                            // Estructura responsive para mostrar los datos en columnas
+                                            echo "<div class='row gy-4'>";
                                             while ($row = $result->fetch_assoc()) {
-                                                echo "<div class='data-item'>";
-                                                echo "<h4>Entidad: " . htmlspecialchars($row['Entidad_Nombre']) . "</h4>";
-                                                // Mostrar la imagen
-                                                if (!empty($row['foto_ruta'])) { // Verifica si la ruta de la foto no está vacía
-                                                    echo "<img src='" . htmlspecialchars($row['foto_ruta']) . "' alt='Imagen de " . htmlspecialchars($row['Entidad_Nombre']) . "' style='max-width: 200px; height: auto;'>";
-                                                } else {
-                                                    echo "<p>No hay imagen disponible.</p>";
+                                                echo "<div class='col-md-6 col-lg-4 data-item'>";
+
+                                                // Información Personal
+                                                if (!empty($row['Nombre']) || !empty($row['Apellido'])) {
+                                                    echo "<h2>Información Personal</h2>";
+                                                    echo "<p>Nombre: " . htmlspecialchars($row['Nombre']) . " " . htmlspecialchars($row['Apellido']) . "</p>";
                                                 }
-                                                echo "<p>Rama de Acción: " . htmlspecialchars($row['rama_accion']) . "</p>";
-                                                echo "<p>RUC: " . htmlspecialchars($row['ruc']) . "</p>";
-                                                echo "<p>Email: " . htmlspecialchars($row['email']) . "</p>";
-                                                echo "<p>Representante: " . htmlspecialchars($row['representante']) . "</p>";
-                                                echo "<p>Fuente de Financiación: " . htmlspecialchars($row['fuente_financiacion']) . "</p>";
-                                                echo "<p>Descripción: " . htmlspecialchars($row['descripcion']) . "</p>";
-                                                echo "<p>Tipo de Cuenta: " . htmlspecialchars($row['tipo_cuenta']) . "</p>";
-                                                echo "<p>Cuentas Bancarias: " . htmlspecialchars($row['cuentas_bancarias']) . "</p>";
-                                                echo "<p>Tipo de Red: " . htmlspecialchars($row['tipo_red']) . "</p>";
-                                                echo "<p>Links: " . htmlspecialchars($row['links']) . "</p>";
-                                                echo "<p>Teléfono: " . htmlspecialchars($row['telefono']) . "</p>";
-                                                echo "<p>Ubicación: " . htmlspecialchars($row['pais']) . ", " . htmlspecialchars($row['provincia']) . ", " . htmlspecialchars($row['canton']) . ", " . htmlspecialchars($row['parroquia']) . "</p>";
-                                                echo "<p>Altitud: " . htmlspecialchars($row['altitud']) . ", Latitud: " . htmlspecialchars($row['latitud']) . "</p>";
-                                                echo "</div>";
+                                                if (!empty($row['correo'])) {
+                                                    echo "<p>Correo: " . htmlspecialchars($row['correo']) . "</p>";
+                                                }
+
+                                                // Clasificación
+                                                if (!empty($row['clasificacion_tipo'])) {
+                                                    echo "<h2>Clasificación</h2>";
+                                                    echo "<p>Tipo: " . htmlspecialchars($row['clasificacion_tipo']) . "</p>";
+                                                }
+
+                                                // Datos Adicionales
+                                                if (!empty($row['tipo_cuenta']) || !empty($row['cuentas_bancarias'])) {
+                                                    echo "<h2>Datos Adicionales</h2>";
+                                                    echo "<p>Tipo de Cuenta: " . htmlspecialchars($row['tipo_cuenta']) . "</p>";
+                                                    echo "<p>Cuentas Bancarias: " . htmlspecialchars($row['cuentas_bancarias']) . "</p>";
+                                                }
+
+                                                // Foto de Perfil
+                                                if (!empty($row['foto_ruta'])) {
+                                                    echo "<h2>Foto de Perfil</h2>";
+                                                    echo "<img src='" . htmlspecialchars($row['foto_ruta']) . "' alt='Imagen de perfil' class='img-fluid' style='max-width: 200px; height: auto;'>";
+                                                }
+
+                                                // Redes Sociales
+                                                if (!empty($row['redes_sociales_tipo']) || !empty($row['redes_sociales_links'])) {
+                                                    echo "<h2>Redes Sociales</h2>";
+                                                    echo "<p>Tipo de Red: " . htmlspecialchars($row['redes_sociales_tipo']) . "</p>";
+                                                    echo "<p>Links: " . htmlspecialchars($row['redes_sociales_links']) . "</p>";
+                                                }
+
+                                                // Teléfonos
+                                                if (!empty($row['telefono'])) {
+                                                    echo "<h2>Contacto</h2>";
+                                                    echo "<p>Teléfono: " . htmlspecialchars($row['telefono']) . "</p>";
+                                                }
+
+                                                // Ubicación
+                                                if (!empty($row['pais']) || !empty($row['provincia']) || !empty($row['canton']) || !empty($row['parroquia'])) {
+                                                    echo "<h2>Ubicación</h2>";
+                                                    if (!empty($row['pais'])) {
+                                                        echo "<p>País: " . htmlspecialchars($row['pais']) . "</p>";
+                                                    }
+                                                    if (!empty($row['provincia'])) {
+                                                        echo "<p>Provincia: " . htmlspecialchars($row['provincia']) . "</p>";
+                                                    }
+                                                    if (!empty($row['canton'])) {
+                                                        echo "<p>Cantón: " . htmlspecialchars($row['canton']) . "</p>";
+                                                    }
+                                                    if (!empty($row['parroquia'])) {
+                                                        echo "<p>Parroquia: " . htmlspecialchars($row['parroquia']) . "</p>";
+                                                    }
+                                                    echo "<p>Altitud: " . htmlspecialchars($row['altitud']) . ", Latitud: " . htmlspecialchars($row['latitud']) . "</p>";
+                                                }
+
+                                                // Entidad
+                                                if (!empty($row['Entidad_Nombre']) || !empty($row['rama_accion'])) {
+                                                    echo "<h2>Entidad</h2>";
+                                                    echo "<p>Nombre de Entidad: " . htmlspecialchars($row['Entidad_Nombre']) . "</p>";
+                                                    echo "<p>Rama de Acción: " . htmlspecialchars($row['rama_accion']) . "</p>";
+                                                    echo "<p>RUC: " . htmlspecialchars($row['ruc']) . "</p>";
+                                                    echo "<p>Email: " . htmlspecialchars($row['entidad_email']) . "</p>";
+                                                    echo "<p>Representante: " . htmlspecialchars($row['representante']) . "</p>";
+                                                    echo "<p>Fuente de Financiación: " . htmlspecialchars($row['fuente_financiacion']) . "</p>";
+                                                    echo "<p>Descripción: " . htmlspecialchars($row['entidad_descripcion']) . "</p>";
+                                                }
+
+                                                echo "</div>"; // Fin del col
                                             }
+                                            echo "</div>"; // Fin de la fila
                                         } else {
-                                            echo "<p>No hay datos disponibles xd.</p>";
+                                            echo "<p>No hay datos disponibles.</p>";
                                         }
 
                                         // Cerrar la conexión
@@ -390,10 +423,12 @@ WHERE u.id_usuario = ?;
                                     } else {
                                         echo "<p>Error: Usuario no autenticado.</p>";
                                     }
-
                                     ?>
-                                </div> <!-- Mostrar datos aquí -->
+                                </div> <!-- Fin de contenedor -->
+
+
                             </div>
+
                         </main>
 
 
@@ -403,7 +438,7 @@ WHERE u.id_usuario = ?;
                         <div id="configuracion" class="content-section">
                             <h2>Configuración</h2>
 
-                            <form  method="post" enctype="multipart/form-data">
+                            <form method="post" enctype="multipart/form-data">
                                 <h1>Añadir Clasificación y Entidad</h1>
                                 <div class="row">
 
@@ -443,7 +478,7 @@ WHERE u.id_usuario = ?;
                                             <label for="Entidad_Nombre"><i class="bi bi-building"></i> Nombre de la Entidad:</label>
                                             <input type="text" class="form-control" id="Entidad_Nombre" name="Entidad_Nombre" required>
                                         </div>
-                                       
+
 
                                         <div class="form-group">
                                             <label for="rama_accion"><i class="bi bi-gear"></i> Rama de Acción:</label>
@@ -467,10 +502,10 @@ WHERE u.id_usuario = ?;
                                             </select>
                                         </div>
                                         <div class="form-group">
-        <label for="ruc"><i class="bi bi-file-earmark-text"></i> RUC:</label>
-        <input type="text" class="form-control" id="ruc" name="ruc" required pattern="^[0-9]{11}$" title="El RUC debe tener 11 dígitos">
-        <small class="form-text text-muted">Introduce un RUC válido de 11 dígitos.</small>
-    </div>
+                                            <label for="ruc"><i class="bi bi-file-earmark-text"></i> RUC:</label>
+                                            <input type="text" class="form-control" id="ruc" name="ruc" required pattern="^[0-9]{11}$" title="El RUC debe tener 11 dígitos">
+                                            <small class="form-text text-muted">Introduce un RUC válido de 11 dígitos.</small>
+                                        </div>
 
                                         <div class="form-group">
                                             <label for="email"><i class="bi bi-envelope"></i> Email:</label>
@@ -635,7 +670,7 @@ WHERE u.id_usuario = ?;
                                                 const provinciaSelect = document.getElementById('provincia');
                                                 for (const id in data) {
                                                     const option = document.createElement('option');
-                                                    option.value = id;
+                                                    option.value = data[id].provincia; // Cambiar para guardar el nombre de la provincia
                                                     option.textContent = data[id].provincia;
                                                     provinciaSelect.appendChild(option);
                                                 }
@@ -646,7 +681,7 @@ WHERE u.id_usuario = ?;
                                                 const cantonSelect = document.getElementById('canton');
                                                 const parroquiaSelect = document.getElementById('parroquia');
 
-                                                const provinciaId = provinciaSelect.value;
+                                                const provinciaId = provinciaSelect.selectedIndex > 0 ? Object.keys(data)[provinciaSelect.selectedIndex - 1] : null;
 
                                                 // Limpiar cantones y parroquias
                                                 cantonSelect.innerHTML = '<option value="">Selecciona un cantón</option>';
@@ -657,7 +692,7 @@ WHERE u.id_usuario = ?;
                                                     for (const cantonId in cantones) {
                                                         const canton = cantones[cantonId];
                                                         const option = document.createElement('option');
-                                                        option.value = cantonId;
+                                                        option.value = canton.canton; // Cambiar para guardar el nombre del cantón
                                                         option.textContent = canton.canton;
                                                         cantonSelect.appendChild(option);
                                                     }
@@ -668,23 +703,24 @@ WHERE u.id_usuario = ?;
                                                 const cantonSelect = document.getElementById('canton');
                                                 const parroquiaSelect = document.getElementById('parroquia');
 
-                                                const cantonId = cantonSelect.value;
+                                                const provinciaId = document.getElementById('provincia').selectedIndex > 0 ? Object.keys(data)[document.getElementById('provincia').selectedIndex - 1] : null;
+                                                const cantonId = cantonSelect.selectedIndex > 0 ? Object.keys(data[provinciaId].cantones)[cantonSelect.selectedIndex - 1] : null;
 
                                                 // Limpiar parroquias
                                                 parroquiaSelect.innerHTML = '<option value="">Selecciona una parroquia</option>';
 
                                                 if (cantonId) {
-                                                    const provinciaId = document.getElementById('provincia').value;
                                                     const parroquias = data[provinciaId].cantones[cantonId].parroquias;
                                                     for (const parroquiaId in parroquias) {
                                                         const option = document.createElement('option');
-                                                        option.value = parroquiaId;
+                                                        option.value = parroquias[parroquiaId]; // Cambiar para guardar el nombre de la parroquia
                                                         option.textContent = parroquias[parroquiaId];
                                                         parroquiaSelect.appendChild(option);
                                                     }
                                                 }
                                             }
                                         </script>
+
 
                                         <div class="form-group">
                                             <label for="altitud"><i class="bi bi-geo-alt"></i> Altitud :</label>
@@ -702,8 +738,8 @@ WHERE u.id_usuario = ?;
                                         <button type="submit" name="add_combined" class="btn btn-primary">Agregar</button>
                                     </div>
                                 </div>
-                       
-                                </form>
+
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -750,29 +786,29 @@ WHERE u.id_usuario = ?;
     }
 </script>
 <script>
-document.getElementById('miFormulario').addEventListener('submit', function(event) {
-    event.preventDefault(); // Evitar el envío normal del formulario
+    document.getElementById('miFormulario').addEventListener('submit', function(event) {
+        event.preventDefault(); // Evitar el envío normal del formulario
 
-    const formData = new FormData(this); // Obtener los datos del formulario
+        const formData = new FormData(this); // Obtener los datos del formulario
 
-    fetch('dashboard.php', { // Cambia esto a la ruta de tu script PHP
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json()) // Convertir la respuesta a JSON
-    .then(data => {
-        if (data.status === 'success') {
-            alert(data.message); // Mostrar mensaje de éxito
-            document.querySelector('.nav-item a[href="#"][onclick="showSection(\'configuracion\')"]').parentElement.style.display = 'none'; // Ocultar botón
-        } else {
-            alert('Error: ' + data.message); // Mostrar mensaje de error
-        }
-    })
-    .catch(error => {
-        console.error('Error en la solicitud:', error);
-        alert('Error al enviar el formulario. Intenta nuevamente.');
+        fetch('dashboard.php', { // Cambia esto a la ruta de tu script PHP
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json()) // Convertir la respuesta a JSON
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message); // Mostrar mensaje de éxito
+                    document.querySelector('.nav-item a[href="#"][onclick="showSection(\'configuracion\')"]').parentElement.style.display = 'none'; // Ocultar botón
+                } else {
+                    alert('Error: ' + data.message); // Mostrar mensaje de error
+                }
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+                alert('Error al enviar el formulario. Intenta nuevamente.');
+            });
     });
-});
 </script>
 
 
