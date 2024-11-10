@@ -273,7 +273,7 @@ if (isset($_SESSION['id_usuario'])) {
                             <!-- Inicio Section -->
                             <div id="inicio" class="content-section active-section">
                                 <h2>Inicio</h2>
-                                <div id="resultado" class="container">
+                                <div id="resultado" class="container-fluid bg-secondary">
                                     <?php
                                     // Verificar si el id_usuario está disponible en la sesión
                                     if (isset($_SESSION['id_usuario'])) {
@@ -337,7 +337,7 @@ if (isset($_SESSION['id_usuario'])) {
                                             // Estructura responsive para mostrar los datos en columnas
                                             echo "<div class='row gy-4'>";
                                             while ($row = $result->fetch_assoc()) {
-                                                echo "<div class='col-md-6 col-lg-4 data-item'>";
+                                                echo "<div class='col-md-8 col-lg-8 data-item'>";
 
                                                 // Información Personal
                                                 if (!empty($row['Nombre']) || !empty($row['Apellido'])) {

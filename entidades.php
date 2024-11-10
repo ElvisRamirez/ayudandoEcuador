@@ -35,6 +35,62 @@ session_start();
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <style>
+        /* Contenedor para las tarjetas */
+/* Contenedor para las tarjetas */
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Espacio entre columnas (y filas) */
+}
+
+/* Asegurarse de que las tarjetas tengan el mismo tamaño */
+.card {
+    width: 100%; /* Para ocupar todo el ancho dentro de una columna */
+    height: 100%; /* Para que las tarjetas sean uniformes en altura */
+    max-width: 300px; /* Limitar el ancho máximo de las tarjetas */
+    margin-bottom: 20px;
+    border: 1px solid #ddd; /* Bordes suaves */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra ligera */
+}
+
+/* Hacer que las tarjetas se ajusten con el grid */
+.col-md-4 {
+    flex: 1 0 30%; /* Esto hará que cada tarjeta ocupe aproximadamente un 30% del ancho de su contenedor */
+    max-width: 300px; /* Limitar el tamaño máximo de la columna */
+}
+
+/* Agregar barra de desplazamiento a la descripción */
+.descripcion {
+    max-height: 100px; /* Altura máxima para la descripción */
+    overflow-y: auto; /* Habilitar desplazamiento vertical si es necesario */
+    padding-right: 5px; /* Espacio extra para la barra de desplazamiento */
+    text-overflow: ellipsis; /* Agregar puntos suspensivos si es necesario */
+}
+
+/* Estilos adicionales opcionales */
+.card-img-top {
+    height: 200px; /* Limitar la altura de la imagen */
+    object-fit: cover; /* Asegura que la imagen se recorte de manera uniforme */
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+/* Ajustando espacio con márgenes en las columnas */
+.col-md-4 {
+    flex: 1 0 30%;
+    max-width: 300px;
+    margin-right: 15px; /* Espacio entre columnas */
+    margin-bottom: 20px; /* Espacio entre filas */
+}
+
+/* Para quitar el margen en la última columna de cada fila */
+.col-md-4:last-child {
+    margin-right: 0;
+}
+
+
+    </style>
 </head>
 
 <div>
@@ -97,62 +153,82 @@ session_start();
 <!-- Navbar End -->
 
 
-<!-- Page Header Start -->
-<div class="container-fluid bg-dark p-5">
-    <div class="row">
-        <div class="col-12 text-center">
-            <h1 class="display-4 text-white">About Us</h1>
-            <a href="">Home</a>
-            <i class="far fa-square text-primary px-2"></i>
-            <a href="">About</a>
-        </div>
-    </div>
-</div>
-<!-- Page Header End -->
+
 
 
 <!-- About Start -->
 <div class="container-fluid bg-secondary p-0">
     <div class="row g-0">
-        <div class="col-lg-6 py-6 px-5">
-            <h1 class="display-5 mb-4">Welcome To <span class="text-primary">CONSULT</span></h1>
-            <h4 class="text-primary mb-4">Diam dolor diam ipsum sit. Clita erat ipsum et lorem stet no lorem sit clita duo justo magna dolore</h4>
-            <p class="mb-4">Et stet ipsum nonumy rebum eos justo, accusam invidunt aliquyam stet magna at et sanctus, vero sea sit amet dolores, sit dolor duo invidunt dolor, kasd rebum consetetur diam invidunt erat stet. Accusam nonumy lorem kasd eirmod. Justo clita sadipscing ea invidunt rebum sadipscing consetetur. Amet diam amet amet sanctus sanctus invidunt erat ipsum eirmod.</p>
-            <a href="" class="btn btn-primary py-md-3 px-md-5 rounded-pill">Get A Quote</a>
-        </div>
-        <div class="col-lg-6">
-            <div class="h-100 d-flex flex-column justify-content-center bg-primary p-5">
-                <div class="d-flex text-white mb-5">
-                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center bg-white text-primary rounded-circle mx-auto mb-4" style="width: 60px; height: 60px;">
-                        <i class="fa fa-user-tie fs-4"></i>
-                    </div>
-                    <div class="ps-4">
-                        <h3>Business Planning</h3>
-                        <p class="mb-0">Tempor erat elitr rebum at clita. Diam dolor ipsum amet eos erat ipsum lorem et sit sed stet lorem sit clita duo</p>
-                    </div>
-                </div>
-                <div class="d-flex text-white mb-5">
-                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center bg-white text-primary rounded-circle mx-auto mb-4" style="width: 60px; height: 60px;">
-                        <i class="fa fa-chart-line fs-4"></i>
-                    </div>
-                    <div class="ps-4">
-                        <h3>Financial Analaysis</h3>
-                        <p class="mb-0">Tempor erat elitr rebum at clita. Diam dolor ipsum amet eos erat ipsum lorem et sit sed stet lorem sit clita duo</p>
-                    </div>
-                </div>
-                <div class="d-flex text-white">
-                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center bg-white text-primary rounded-circle mx-auto mb-4" style="width: 60px; height: 60px;">
-                        <i class="fa fa-balance-scale fs-4"></i>
-                    </div>
-                    <div class="ps-4">
-                        <h3>legal Advisory</h3>
-                        <p class="mb-0">Tempor erat elitr rebum at clita. Diam dolor ipsum amet eos erat ipsum lorem et sit sed stet lorem sit clita duo</p>
+        
+    <?php
+// Conexión a la base de datos
+$conn = new mysqli('localhost', 'root', 'admin', 'ayudandoecuador1');
+
+// Verificar la conexión
+if ($conn->connect_error) {
+    die("Conexión fallida: " . $conn->connect_error);
+}
+
+// Consulta SQL para obtener todas las entidades
+$sql = "
+    SELECT 
+        e.id_dato,
+        e.Entidad_Nombre,
+        e.rama_accion,
+        e.descripcion AS entidad_descripcion,
+        f.foto_ruta,
+        c.tipo AS clasificacion_tipo
+    FROM Entidad e
+    LEFT JOIN fotos f ON e.id_dato = f.id_dato
+    LEFT JOIN Clasificacion c ON e.id_dato = c.id_datos;
+";
+
+// Preparar la consulta
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Error al preparar la consulta: " . $conn->error);
+}
+
+// Ejecutar la consulta
+$stmt->execute();
+
+// Obtener los resultados
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    // Mostrar todas las entidades
+    while ($row = $result->fetch_assoc()) {
+        echo "
+            <div class='col-md-4'>
+                <div class='card'>
+                    <img src='" . htmlspecialchars($row['foto_ruta']) . "' class='card-img-top' alt='Imagen de la entidad'>
+                    <div class='card-body'>
+                        <h5 class='card-title'>" . htmlspecialchars($row['Entidad_Nombre']) . "</h5>
+                        <p class='card-text'><strong>Clasificación:</strong> " . htmlspecialchars($row['clasificacion_tipo']) . "</p>
+                        <p class='card-text descripcion'><strong>Descripción:</strong> " . htmlspecialchars($row['entidad_descripcion']) . "</p>
+                        <p class='card-text'><strong>Rama de Acción:</strong> " . htmlspecialchars($row['rama_accion']) . "</p>
+                        <a href='ver_entidad.php?id=" . $row['id_dato'] . "' class='btn btn-primary'>Ver</a>
                     </div>
                 </div>
             </div>
-        </div>
+        ";
+    }
+} else {
+    echo "<p>No se encontraron detalles para las entidades.</p>";
+}
+
+// Cerrar la declaración y la conexión
+$stmt->close();
+$conn->close();
+?>
+
+
+
+
+
     </div>
 </div>
+
 <!-- About End -->
 
 
