@@ -75,6 +75,7 @@ session_start();
     object-fit: cover; /* Asegura que la imagen se recorte de manera uniforme */
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+    object-fit: cover; /* Mantiene la proporción de la imagen */
 }
 /* Ajustando espacio con márgenes en las columnas */
 .col-md-4 {
@@ -161,6 +162,7 @@ session_start();
     <div class="row g-0">
         
     <?php
+    
 // Conexión a la base de datos
 $conn = new mysqli('localhost', 'root', 'admin', 'ayudandoecuador1');
 
@@ -176,7 +178,7 @@ $sql = "
         e.Entidad_Nombre,
         e.rama_accion,
         e.descripcion AS entidad_descripcion,
-        f.foto_ruta,
+        f.foto_ruta,  -- BLOB con los datos de la imagen
         c.tipo AS clasificacion_tipo
     FROM Entidad e
     LEFT JOIN fotos f ON e.id_dato = f.id_dato
@@ -198,20 +200,46 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     // Mostrar todas las entidades
     while ($row = $result->fetch_assoc()) {
-        echo "
-            <div class='col-md-4'>
-                <div class='card'>
-                    <img src='" . htmlspecialchars($row['foto_ruta']) . "' class='card-img-top' alt='Imagen de la entidad'>
-                    <div class='card-body'>
-                        <h5 class='card-title'>" . htmlspecialchars($row['Entidad_Nombre']) . "</h5>
-                        <p class='card-text'><strong>Clasificación:</strong> " . htmlspecialchars($row['clasificacion_tipo']) . "</p>
-                        <p class='card-text descripcion'><strong>Descripción:</strong> " . htmlspecialchars($row['entidad_descripcion']) . "</p>
-                        <p class='card-text'><strong>Rama de Acción:</strong> " . htmlspecialchars($row['rama_accion']) . "</p>
-                        <a href='ver_entidad.php?id=" . $row['id_dato'] . "' class='btn btn-primary'>Ver</a>
+        // Verificar si el BLOB contiene datos
+        if ($row['foto_ruta']) {
+            // Convertir el BLOB a base64
+            $foto_base64 = base64_encode($row['foto_ruta']);
+            // Obtener el tipo MIME de la imagen (puede no ser necesario si no se tiene)
+            $img_info = getimagesizefromstring($row['foto_ruta']);
+            $foto_tipo = isset($img_info['mime']) ? $img_info['mime'] : 'image/jpeg'; // Default to jpeg
+
+            // Mostrar la tarjeta con la imagen en base64
+            echo "
+                <div class='col-md-4'>
+                    <div class='card'>
+                        <img src='data:$foto_tipo;base64,$foto_base64' class='card-img-top' alt='Imagen de la entidad'>
+                        <div class='card-body'>
+                            <h5 class='card-title'>" . htmlspecialchars($row['Entidad_Nombre']) . "</h5>
+                            <p class='card-text'><strong>Clasificación:</strong> " . htmlspecialchars($row['clasificacion_tipo']) . "</p>
+                            <p class='card-text'><strong>Rama de Acción:</strong> " . htmlspecialchars($row['rama_accion']) . "</p>
+                            <a href='ver_entidad.php?id=" . $row['id_dato'] . "' class='btn btn-primary'>Ver</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        ";
+            ";
+        } else {
+            // Si no hay imagen, mostrar un fondo colorido o una imagen predeterminada
+            echo "
+                <div class='col-md-4'>
+                    <div class='card'>
+                        <div class='card-img-top' style='background-color: #d3d3d3; height: 200px; display: flex; align-items: center; justify-content: center;'>
+                            <span style='color: white;'>Sin imagen</span>
+                        </div>
+                        <div class='card-body'>
+                            <h5 class='card-title'>" . htmlspecialchars($row['Entidad_Nombre']) . "</h5>
+                            <p class='card-text'><strong>Clasificación:</strong> " . htmlspecialchars($row['clasificacion_tipo']) . "</p>
+                            <p class='card-text'><strong>Rama de Acción:</strong> " . htmlspecialchars($row['rama_accion']) . "</p>
+                            <a href='ver_entidad.php?id=" . $row['id_dato'] . "' class='btn btn-primary'>Ver</a>
+                        </div>
+                    </div>
+                </div>
+            ";
+        }
     }
 } else {
     echo "<p>No se encontraron detalles para las entidades.</p>";
@@ -221,6 +249,11 @@ if ($result->num_rows > 0) {
 $stmt->close();
 $conn->close();
 ?>
+
+
+
+
+
 
 
 

@@ -77,8 +77,11 @@ if (isset($_SESSION['id_usuario'])) {
             if (!$stmt) {
                 die('Error en la consulta SQL: ' . $conn->error); // Mostrar el error SQL si la preparación falla
             }
-            $stmt->bind_param("iss", $id_dato, $tipo_cuenta, $cuentas_bancarias);
-            $stmt->execute();
+            $stmt->bind_param("iss", $id_dato, $tipo_cuenta, $cuentas_bancarias); // Asegúrate de que los tipos coincidan
+            if (!$stmt->execute()) {
+                die('Error en la inserción de datos adicionales: ' . $stmt->error);
+            }
+
 
             // 5. Manejar la foto
             if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
@@ -120,8 +123,15 @@ if (isset($_SESSION['id_usuario'])) {
 
             $conn->commit(); // Confirmar la transacción
             echo 'Agregado exitosamente.';
+             // Si la inserción es exitosa, establece la sesión
+    $_SESSION['agregado_exitoso'] = true;
+
+    // Redirige a la misma página para que el cambio se refleje
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
         } catch (Exception $e) {
             $conn->rollback(); // Revertir la transacción en caso de error
+            $_SESSION['agregado_exitoso'] = true;
             echo 'Error al agregar datos: ' . $e->getMessage();
         } finally {
             $conn->close(); // Cerrar la conexión
@@ -174,6 +184,11 @@ if (isset($_SESSION['id_usuario'])) {
             display: block;
         }
     </style>
+    <script>
+        function showSection(sectionId) {
+            document.getElementById(sectionId).style.display = 'block';
+        }
+    </script>
 </head>
 
 <div>
@@ -243,7 +258,7 @@ if (isset($_SESSION['id_usuario'])) {
     <!-- Contact Start -->
     <div class="container-fluid bg-secondary px-0">
         <div class="row g-0">
-            <div class="col-lg-6 py-6 px-5">
+            <div class="col-lg-12 py-8 px-5">
 
 
                 <div class="container-fluid">
@@ -258,11 +273,24 @@ if (isset($_SESSION['id_usuario'])) {
                                             <i class="fas fa-tachometer-alt"></i> Inicio
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#" onclick="showSection('configuracion')">
-                                            <i class="fas fa-cogs"></i> Configuración
-                                        </a>
-                                    </li>
+                                    <ul class="nav">
+    <?php if (!isset($_SESSION['agregado_exitoso'])): ?>
+        <!-- Botón de Configuración (solo se muestra si no se ha agregado exitosamente) -->
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showSection('configuracion')">
+                <i class="fas fa-cogs"></i> Configuración
+            </a>
+        </li>
+    <?php else: ?>
+        <!-- Botón de Editar (se muestra después de un agregado exitoso) -->
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showSection('editar')">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+        </li>
+    <?php endif; ?>
+</ul>
+
                                 </ul>
                             </div>
                         </nav>
@@ -594,7 +622,8 @@ if (isset($_SESSION['id_usuario'])) {
 
                                         <div class="form-group">
                                             <label for="foto"><i class="bi bi-image"></i> Cargar Foto:</label>
-                                            <input type="file" class="form-control" name="foto" />
+                                            <input type="file" name="foto" id="foto" accept="image/*">
+
                                         </div>
 
                                         <div class="form-group">
@@ -740,6 +769,7 @@ if (isset($_SESSION['id_usuario'])) {
                                 </div>
 
                             </form>
+                           
                         </div>
                     </div>
                 </div>
